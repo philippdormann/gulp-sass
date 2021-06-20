@@ -1,32 +1,35 @@
 {
-  "name": "gulp-sass",
-  "version": "4.1.0",
+  "name": "@philippdormann/gulp-sass",
+  "version": "5.0.2",
   "description": "Gulp plugin for sass",
   "main": "index.js",
   "engines": {
-    "node": ">=6"
+    "node": ">=16"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha test"
+    "test": "mocha test"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/dlmanning/gulp-sass"
+    "url": "https://github.com/philippdormann/gulp-sass"
   },
   "keywords": [
     "gulpplugin",
     "sass",
     "gulp"
   ],
-  "author": "David Manning",
+  "author": {
+    "url": "https://philippdormann.de",
+    "name": "Philipp Dormann"
+  },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dlmanning/gulp-sass/issues"
+    "url": "https://github.com/philippdormann/gulp-sass/issues"
   },
   "dependencies": {
     "chalk": "^2.3.0",
     "lodash": "^4.17.11",
-    "node-sass": "^4.8.3",
+    "node-sass": "^6.0.0",
     "plugin-error": "^1.0.1",
     "replace-ext": "^1.0.0",
     "strip-ansi": "^4.0.0",
