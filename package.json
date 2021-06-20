@@ -1,6 +1,6 @@
 {
   "name": "@philippdormann/gulp-sass",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Gulp plugin for sass",
   "main": "index.js",
   "engines": {
