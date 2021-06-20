@@ -35,5 +35,8 @@
     "strip-ansi": "4.0.0",
     "through2": "2.0.5",
     "vinyl-sourcemaps-apply": "0.2.1"
+  },
+  "volta": {
+    "node": "16.3.0"
   }
 }
