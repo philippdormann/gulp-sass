@@ -1,16 +1,18 @@
 const chalk = require('chalk');
 const PluginError = require('plugin-error');
 const replaceExtension = require('replace-ext');
-const stripAnsi = require('strip-ansi');
 const through = require('through2');
-const clonedeep = require('lodash/cloneDeep');
 const path = require('path');
-const applySourceMap = require('vinyl-sourcemaps-apply');
+const compiler = require('node-sass');
+const stripAnsi = (input) => {
+  return input.replace(
+    /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+}
 
 const PLUGIN_NAME = 'gulp-sass';
 
 // Main Gulp Sass function
-const gulpSass = (options, sync) => through.obj((file, enc, cb) => { // eslint-disable-line consistent-return
+const gulpSass = (options, sync) => through.obj((file, enc, cb) => {
   if (file.isNull()) {
     return cb(null, file);
   }
@@ -24,11 +26,12 @@ const gulpSass = (options, sync) => through.obj((file, enc, cb) => { // eslint-d
   }
 
   if (!file.contents.length) {
-    file.path = replaceExtension(file.path, '.css'); // eslint-disable-line no-param-reassign
+    file.path = replaceExtension(file.path, '.css');
     return cb(null, file);
   }
 
-  const opts = clonedeep(options || {});
+  let opts = {}
+  Object.assign(opts, (options || {}))
   opts.data = file.contents.toString();
 
   // we set the file path here so that libsass can correctly resolve import paths
@@ -50,55 +53,15 @@ const gulpSass = (options, sync) => through.obj((file, enc, cb) => { // eslint-d
 
   opts.includePaths.unshift(path.dirname(file.path));
 
-  // Generate Source Maps if plugin source-map present
-  if (file.sourceMap) {
-    opts.sourceMap = file.path;
-    opts.omitSourceMapUrl = true;
-    opts.sourceMapContents = true;
-  }
-
   /**
    * Handles returning the file to the stream
    */
   const filePush = (sassObj) => {
-    let sassMap;
-    let sassMapFile;
-    let sassFileSrc;
-    let sassFileSrcPath;
-    let sourceFileIndex;
-
-    // Build Source Maps!
-    if (sassObj.map) {
-      // Transform map into JSON
-      sassMap = JSON.parse(sassObj.map.toString());
-      // Grab the stdout and transform it into stdin
-      sassMapFile = sassMap.file.replace(/^stdout$/, 'stdin');
-      // Grab the base file name that's being worked on
-      sassFileSrc = file.relative;
-      // Grab the path portion of the file that's being worked on
-      sassFileSrcPath = path.dirname(sassFileSrc);
-      if (sassFileSrcPath) {
-        // Prepend the path to all files in the sources array except the file that's being worked on
-        sourceFileIndex = sassMap.sources.indexOf(sassMapFile);
-        sassMap.sources = sassMap.sources.map((source, index) => { // eslint-disable-line arrow-body-style
-          return index === sourceFileIndex ? source : path.join(sassFileSrcPath, source);
-        });
-      }
-
-      // Remove 'stdin' from souces and replace with filenames!
-      sassMap.sources = sassMap.sources.filter(src => src !== 'stdin' && src);
-
-      // Replace the map file with the original file name (but new extension)
-      sassMap.file = replaceExtension(sassFileSrc, '.css');
-      // Apply the map
-      applySourceMap(file, sassMap);
-    }
-
-    file.contents = sassObj.css; // eslint-disable-line no-param-reassign
-    file.path = replaceExtension(file.path, '.css'); // eslint-disable-line no-param-reassign
+    file.contents = sassObj.css;
+    file.path = replaceExtension(file.path, '.css');
 
     if (file.stat) {
-      file.stat.atime = file.stat.mtime = file.stat.ctime = new Date(); // eslint-disable-line
+      file.stat.atime = file.stat.mtime = file.stat.ctime = new Date();
     }
 
     cb(null, file);
@@ -112,28 +75,28 @@ const gulpSass = (options, sync) => through.obj((file, enc, cb) => { // eslint-d
     const relativePath = path.relative(process.cwd(), filePath);
     const message = [chalk.underline(relativePath), error.formatted].join('\n');
 
-    error.messageFormatted = message; // eslint-disable-line no-param-reassign
-    error.messageOriginal = error.message; // eslint-disable-line no-param-reassign
-    error.message = stripAnsi(message); // eslint-disable-line no-param-reassign
-    error.relativePath = relativePath; // eslint-disable-line no-param-reassign
+    error.messageFormatted = message;
+    error.messageOriginal = error.message;
+    error.message = stripAnsi(message);
+    error.relativePath = relativePath;
 
     return cb(new PluginError(PLUGIN_NAME, error));
   };
 
   if (sync !== true) {
     // Async Sass render
-    const callback = (error, obj) => { // eslint-disable-line consistent-return
+    const callback = (error, obj) => {
       if (error) {
         return errorM(error);
       }
       filePush(obj);
     };
 
-    gulpSass.compiler.render(opts, callback);
+    compiler.render(opts, callback);
   } else {
     // Sync Sass render
     try {
-      filePush(gulpSass.compiler.renderSync(opts));
+      filePush(compiler.renderSync(opts));
     } catch (error) {
       return errorM(error);
     }
@@ -149,8 +112,5 @@ gulpSass.logError = function logError(error) {
   process.stderr.write(`${message}\n`);
   this.emit('end');
 };
-
-// Store compiler in a prop
-gulpSass.compiler = require('node-sass');
 
 module.exports = gulpSass;
