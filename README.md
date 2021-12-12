@@ -2,7 +2,7 @@
 Sass plugin for [Gulp](https://github.com/gulpjs/gulp).
 
 # Support
-Ported to Node.js >= 16
+Ported to Node.js >= 17
 
 # Install
 ```
