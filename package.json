@@ -4,7 +4,7 @@
   "description": "Gulp plugin for sass",
   "main": "index.js",
   "engines": {
-    "node": ">=16"
+    "node": ">=17"
   },
   "repository": {
     "type": "git",
@@ -24,13 +24,13 @@
     "url": "https://github.com/philippdormann/gulp-sass/issues"
   },
   "dependencies": {
-    "chalk": "4.1.1",
-    "node-sass": "6.0.0",
+    "chalk": "5.0.0",
+    "node-sass": "7.0.0",
     "plugin-error": "1.0.1",
     "replace-ext": "2.0.0",
     "through2": "4.0.2"
   },
   "volta": {
-    "node": "16.3.0"
+    "node": "17.2.0"
   }
 }
